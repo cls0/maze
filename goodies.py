@@ -142,7 +142,17 @@ class SmartGoody(Goody):
 		self.current_target_pos[0] = int(round(self.current_target_pos[0]))
 		self.current_target_pos[1] = int(round(self.current_target_pos[1]))
 		
-		print self.current_target_pos
+		if(self.current_target_pos[0] < -30):
+			self.current_target_pos[0] = -30
+		if(self.current_target_pos[1] < -30):
+			self.current_target_pos[1] = -30
+			
+		if(self.current_target_pos[0] >30):
+			self.current_target_pos[0] = 30
+		if(self.current_target_pos[1] > 30):
+			self.current_target_pos[1] = 30
+		
+		#print self.current_target_pos
 		
 	def norm(self, delta):
 		return (delta[0]*delta[0] + delta[1]*delta[1]) ** 0.5
