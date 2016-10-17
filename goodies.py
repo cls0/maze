@@ -90,6 +90,11 @@ class SmartGoody(Goody):
 			return PING
 		
 		path = self.a_star(self.pos, self.current_target_pos)
+		if path is None:
+			if(random.random() > 0.5):
+				return STAY
+			else:
+				return PING
 		if len(path) >= 2:
 			path = path[-2]
 		else:
@@ -238,13 +243,13 @@ class SmartGoody(Goody):
 			
 			# Lookup neighbours which are not known to be full
 			neighbours = []
-			if (current[0] >= -100) and ((not current_in_grid) or current[0] <= 0 or self.grid[ current[0] - 1 ][ current[1] ] != FULL):
+			if (current[0] >= -40) and ((not current_in_grid) or current[0] <= 0 or self.grid[ current[0] - 1 ][ current[1] ] != FULL):
 				neighbours.append( (current[0] - 1, current[1]) )
-			if (current[1] >= -100) and ((not current_in_grid) or current[1] <= 0 or self.grid[ current[0] ][ current[1] - 1 ] != FULL):
+			if (current[1] >= -40) and ((not current_in_grid) or current[1] <= 0 or self.grid[ current[0] ][ current[1] - 1 ] != FULL):
 				neighbours.append( (current[0], current[1] - 1) )
-			if (current[0] <= 100) and ((not current_in_grid) or current[0] >= (self.width - 1) or self.grid[ current[0] + 1 ][ current[1] ] != FULL):
+			if (current[0] <= 40) and ((not current_in_grid) or current[0] >= (self.width - 1) or self.grid[ current[0] + 1 ][ current[1] ] != FULL):
 				neighbours.append( (current[0] + 1, current[1]) )
-			if (current[1] <= 100) and ((not current_in_grid) or ( current[1] >= (self.height - 1)) or (self.grid[ current[0] ][ current[1] + 1 ] != FULL)):
+			if (current[1] <= 40) and ((not current_in_grid) or ( current[1] >= (self.height - 1)) or (self.grid[ current[0] ][ current[1] + 1 ] != FULL)):
 				neighbours.append( (current[0], current[1] + 1) )
 			
 			for neighbour in neighbours:
