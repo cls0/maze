@@ -123,3 +123,67 @@ class SmartGoody(Goody):
 		if(obstruction[RIGHT]): self.grid[ self.pos[0] + 1 ][ self.pos[1] ] = Cell.FULL
 		else: self.grid[ self.pos[0] + 1  ][ self.pos[1] ] = Cell.EMPTY
 		
+	def a_star(self, src, dest):
+		closed_set = []
+		open_set = [src]
+		came_from = {}
+		
+		start_to_here_cost = {}	# Default value infinity
+		start_to_here_cost[src] = 0
+		
+		start_to_goal_via_here_cost = {} # Default value of infinity
+		start_to_goal_via_here_cost[src] = self.cost_estimate(src, dest)
+		
+		while size(open_set) > 0:
+			# Choose next best point 
+			min_cost = -1 # -1 denotes infinity
+			current = None
+			
+			for pt in open_set:
+				if pt in start_to_goal_via_here_cost:
+					if (start_to_goal_via_here_cost[pt] < min_cost) or (min_cost == -1):
+						current = pt
+						min_cost = start_to_goal_via_here_cost[pt]
+				elif current is None:
+					current = pt
+			
+			if current == dest:
+				path = [current]
+				while current in came_from.keys():
+					current = came_from[current]
+					path.append(current)
+				return path
+			
+			open_set.remove(current)
+			closed_set.append(current)
+			
+			# Lookup neighbours which are not known to be full
+			neighbours = []
+			if current[0] <= 0 or self.grid[ current[0] - 1 ][ current[1] ] != Cell.FULL:
+				neighbours.append( [current[0] - 1, current[1]] )
+			if current[1] <= 0 and self.grid[ current[0] ][ current[1] - 1 ] != Cell.FULL:
+				neighbours.append( [current[0], current[1] - 1] )
+			if current[0] >= (self.grid.shape[0] - 1) and self.grid[ current[0] + 1 ][ current[1] ] != Cell.FULL:
+				neighbours.append( [current[0] + 1, current[1]] )
+			if current[1] >= (self.grid.shape[1] - 1) and self.grid[ current[0] ][ current[1] + 1 ] != Cell.FULL:
+				neighbours.append( [current[0], current[1] + 1] )
+			
+			for neighbour in neighbours:
+				if neighbour in closed_set:
+					continue
+				tentative_start_to_here_cost = start_to_here_cost[current] + 1
+				if neighbour not in open_set:
+					open_set.add(neighbour)
+				elif tentative_start_to_here_cost >= start_to_here_cost[neighbour]:
+					continue
+				
+				came_from[neighbour] = current
+				start_to_here_cost[neighbour] = tentative_start_to_here_cost
+				start_to_goal_via_here_cost[neighbour] = tentative_start_to_here_cost + self.cost_estimate(neighbour, dest)
+		
+		return None
+				
+	
+	def cost_estimate(self, src, dest):
+		return abs(src[0] - dest[0]) + abs(src[1] - dest[1])
+		
