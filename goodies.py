@@ -142,6 +142,8 @@ class SmartGoody(Goody):
 		self.current_target_pos[0] = int(round(self.current_target_pos[0]))
 		self.current_target_pos[1] = int(round(self.current_target_pos[1]))
 		
+		print self.current_target_pos
+		
 	def norm(self, delta):
 		return (delta[0]*delta[0] + delta[1]*delta[1]) ** 0.5
 	
@@ -162,6 +164,11 @@ class SmartGoody(Goody):
 		if(self.baddy_pos != None):
 			self.baddy_pos[0] += delta_shape[1][0]
 			self.baddy_pos[1] += delta_shape[0][0]
+		
+		if(self.current_target_pos != None):
+			self.current_target_pos[0] += delta_shape[1][0]
+			self.current_target_pos[1] += delta_shape[0][0]		
+		
 	
 	def expand_to_include(self, pos):
 		''' Expand to include the position given, pos, and a buffer of one surrounding cell, in the array '''
