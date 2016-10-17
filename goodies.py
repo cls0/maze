@@ -75,6 +75,9 @@ class SmartGoody(Goody):
 			
 			self.choose_target()
 			
+			#print "I got a PING! Targeting ",self.current_target_pos," from ",self.pos
+			#print(self.grid.transpose())
+			
 		# Make sure our surrounding coordinates lie in our grid
 		self.expand_to_include(self.pos)
 		
@@ -86,8 +89,17 @@ class SmartGoody(Goody):
 		# Basic strategy: ping to begin
 		if self.turns_since_last_ping == -1:
 			return PING
+			
+		while self.have_in_grid(self.current_target_pos) and self.grid[ self.current_target_pos[0] ][ self.current_target_pos[1] ] == FULL:
+			self.current_target_pos[0] += random.randint(-1,1)
+			self.current_target_pos[1] += random.randint(-1,1)
+		
+		#print "Target cell ",self.current_target_pos," is ",self.grid[ self.current_target_pos[0] ][ self.current_target_pos[1] ]
 		
 		path = self.a_star(self.pos, self.current_target_pos)
+		
+		#print path
+		
 		if path is None:
 			if(random.random() > 0.5):
 				return STAY
@@ -111,8 +123,11 @@ class SmartGoody(Goody):
 		if(path[0] < self.pos[0]):
 			choice = LEFT
 		
-		#possibilities = filter(lambda direction: not obstruction[direction], [UP, DOWN, LEFT, RIGHT]) #	+ [PING]
-		#choice = random.choice(possibilities)
+		if obstruction[choice]:
+			if(random.random() > 0.5):
+				return STAY
+			else:
+				return PING
 		
 		if choice == LEFT:
 			self.pos[0] -= 1
@@ -126,13 +141,21 @@ class SmartGoody(Goody):
 		return choice
 	
 	def choose_target(self):
+		''' Select an agreed-upon destination to seek out '''
 		delta = self.other_goody_pos + (-1)*self.pos
 		norm_delta = self.norm(delta)
 		
 		midpoint = [(self.other_goody_pos[0] + self.pos[0]) * 0.5, (self.other_goody_pos[1] + self.pos[1]) * 0.5]
+		
+		#self.current_target_pos = midpoint
+		#self.current_target_pos[0] = int(round(self.current_target_pos[0]))
+		#self.current_target_pos[1] = int(round(self.current_target_pos[1]))
+		#return
 			
 		mid_to_baddy = [midpoint[0] + (-1)*self.baddy_pos[0], midpoint[1] + (-1)*self.baddy_pos[1]]
 		norm_mid_to_baddy = self.norm(mid_to_baddy)
+		if norm_mid_to_baddy < 0.001:
+			norm_mid_to_baddy = 0.001
 		
 		if norm_delta/2 < norm_mid_to_baddy:
 			self.current_target_pos = [midpoint[0] + mid_to_baddy[0],midpoint[1] + mid_to_baddy[1]]
@@ -147,7 +170,7 @@ class SmartGoody(Goody):
 		if(self.current_target_pos[1] < -30):
 			self.current_target_pos[1] = -30
 			
-		if(self.current_target_pos[0] >30):
+		if(self.current_target_pos[0] > 30):
 			self.current_target_pos[0] = 30
 		if(self.current_target_pos[1] > 30):
 			self.current_target_pos[1] = 30
@@ -155,6 +178,7 @@ class SmartGoody(Goody):
 		#print self.current_target_pos
 		
 	def norm(self, delta):
+		''' L2 norm '''
 		return (delta[0]*delta[0] + delta[1]*delta[1]) ** 0.5
 	
 	def expand(self, delta_shape):
@@ -218,6 +242,8 @@ class SmartGoody(Goody):
 			self.grid[ self.pos[0] + 1 ][ self.pos[1] ] = EMPTY
 		
 	def a_star(self, src_list, dest_list):
+		''' Return a path between the given source and destination '''
+		# Make sure these are tuples! We need them to be hashable as keys
 		src = (src_list[0], src_list[1])
 		dest = (dest_list[0], dest_list[1])
 	
@@ -254,23 +280,21 @@ class SmartGoody(Goody):
 			open_set.remove(current)
 			closed_set.append(current)
 			
-			current_in_grid = (current[0] >= 0) and (current[1] >= 0) and (current[0] <= self.width - 1) and (current[1] <= self.height - 1)
-			
-			# Lookup neighbours which are not known to be full
+			# Lookup neighbours which are not known to be full, and bound our search to a roughly 100x100 square around ourselves
 			neighbours = []
-			if (current[0] >= -50) and ((not current_in_grid) or current[0] <= 0 or self.grid[ current[0] - 1 ][ current[1] ] != FULL):
+			if (current[0]-src[0] >= -50) and (self.safe_get_point_in_grid([ current[0] - 1, current[1]     ]) != FULL):
 				neighbours.append( (current[0] - 1, current[1]) )
-			if (current[1] >= -50) and ((not current_in_grid) or current[1] <= 0 or self.grid[ current[0] ][ current[1] - 1 ] != FULL):
+			if (current[1]-src[1] >= -50) and (self.safe_get_point_in_grid([ current[0]    , current[1] - 1 ]) != FULL):
 				neighbours.append( (current[0], current[1] - 1) )
-			if (current[0] <= 50) and ((not current_in_grid) or current[0] >= (self.width - 1) or self.grid[ current[0] + 1 ][ current[1] ] != FULL):
+			if (current[0]-src[0] <= 50) and  (self.safe_get_point_in_grid([ current[0] + 1, current[1]     ]) != FULL):
 				neighbours.append( (current[0] + 1, current[1]) )
-			if (current[1] <= 50) and ((not current_in_grid) or ( current[1] >= (self.height - 1)) or (self.grid[ current[0] ][ current[1] + 1 ] != FULL)):
+			if (current[1]-src[1] <= 50) and  (self.safe_get_point_in_grid([ current[0]    , current[1] + 1 ]) != FULL):
 				neighbours.append( (current[0], current[1] + 1) )
 			
 			for neighbour in neighbours:
 				if neighbour in closed_set:
 					continue
-				tentative_start_to_here_cost = start_to_here_cost[current] + 1
+				tentative_start_to_here_cost = start_to_here_cost[current] + self.cost_of_moving_to(self.safe_get_point_in_grid(neighbour))
 				if neighbour not in open_set:
 					open_set.append(neighbour)
 				elif tentative_start_to_here_cost >= start_to_here_cost[neighbour]:
@@ -281,8 +305,26 @@ class SmartGoody(Goody):
 				start_to_goal_via_here_cost[neighbour] = tentative_start_to_here_cost + self.cost_estimate(neighbour, dest)
 		
 		return None
-				
+
+	def safe_get_point_in_grid(self, pt):
+		''' Look up the cell at the given point relative to us, returning UNKNOWN if it's out of the grid '''
+		if not self.have_in_grid(pt):
+			return UNKNOWN
+		return self.grid[ pt[0] ][ pt[1] ]
+	
+	def have_in_grid(self, pt):
+		''' Checks whether or not this point lies in the grid '''
+		return (pt[0] >= 0) and (pt[1] >= 0) and (pt[0] <= self.width - 1) and (pt[1] <= self.height - 1)
+	
+	def cost_of_moving_to(self, cell_value):
+		if cell_value == FULL:
+			raise ValueError('The cost of moving to this cell would be infinite!')
+		if cell_value == EMPTY:
+			return 1
+		if cell_value == UNKNOWN:
+			return 1.2
 	
 	def cost_estimate(self, src, dest):
+		''' Taxicab metric '''
 		return abs(src[0] - dest[0]) + abs(src[1] - dest[1])
 		
