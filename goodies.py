@@ -93,7 +93,10 @@ class SmartGoody(Goody):
 		if len(path) >= 2:
 			path = path[-2]
 		else:
-			return STAY
+			if(random.random() > 0.5):
+				return STAY
+			else:
+				return PING
 		
 		choice = PING
 		if(path[1] > self.pos[1]):
