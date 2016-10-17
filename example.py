@@ -34,7 +34,7 @@ def text_example():
     ''' Prints the state of the game to stdout after each round of turns '''
 
     goody0 = SmartGoody()
-    goody1 = RandomGoody()
+    goody1 = SmartGoody()
     baddy = RandomBaddy()
 
     game = Game(EXAMPLE_MAZE * (2, 2), goody0, goody1, baddy)
@@ -49,7 +49,7 @@ def stats_example(total_games):
     ''' Plays many games, printing cumulative and final stats '''
 
     results = defaultdict(int)
-    for game_number, game in enumerate(game_repeater(EXAMPLE_MAZE, SmartGoody, RandomGoody, RandomBaddy)):
+    for game_number, game in enumerate(game_repeater(EXAMPLE_MAZE, SmartGoody, SmartGoody, RandomBaddy)):
         if game_number == total_games:
             break
         result, _rounds = game.play()
@@ -64,7 +64,7 @@ def gui_example():
     app = QApplication.instance() or QApplication(sys.argv)
     gv = GameViewer()
     gv.show()
-    gv.set_game_generator(game_repeater(EXAMPLE_MAZE * (3, 3), SmartGoody, RandomGoody, RandomBaddy))
+    gv.set_game_generator(game_repeater(EXAMPLE_MAZE * (3, 3), SmartGoody, SmartGoody, RandomBaddy))
     app.exec_()
 
 if __name__ == "__main__":

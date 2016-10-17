@@ -89,7 +89,9 @@ class SmartGoody(Goody):
 		if self.turns_since_last_ping == -1:
 			return PING
 		
-		path = self.a_star(self.pos, self.current_target_pos)[-2]
+		path = self.a_star(self.pos, self.current_target_pos)
+		if len(path) >= 2:
+			path = path[-2]
 		
 		choice = PING
 		if(path[1] > self.pos[1]):
