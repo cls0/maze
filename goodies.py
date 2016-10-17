@@ -147,10 +147,11 @@ class SmartGoody(Goody):
 		
 		midpoint = [(self.other_goody_pos[0] + self.pos[0]) * 0.5, (self.other_goody_pos[1] + self.pos[1]) * 0.5]
 		
-		#self.current_target_pos = midpoint
-		#self.current_target_pos[0] = int(round(self.current_target_pos[0]))
-		#self.current_target_pos[1] = int(round(self.current_target_pos[1]))
-		#return
+		if True:
+			self.current_target_pos = midpoint
+			self.current_target_pos[0] = int(round(self.current_target_pos[0]))
+			self.current_target_pos[1] = int(round(self.current_target_pos[1]))
+			return
 			
 		mid_to_baddy = [midpoint[0] + (-1)*self.baddy_pos[0], midpoint[1] + (-1)*self.baddy_pos[1]]
 		norm_mid_to_baddy = self.norm(mid_to_baddy)
