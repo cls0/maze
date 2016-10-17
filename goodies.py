@@ -55,8 +55,6 @@ class SmartGoody(Goody):
 		if(self.turns_since_last_ping != -1):
 			self.turns_since_last_ping += 1
 		
-		print("Turn ",self.turn)
-		
 		# Store ping information
 		if(_ping_response is not None):
 			self.turns_since_last_ping = 0
